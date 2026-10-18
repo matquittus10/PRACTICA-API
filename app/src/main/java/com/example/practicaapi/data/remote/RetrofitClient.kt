@@ -11,6 +11,7 @@ object RetrofitClient {
     // Debe terminar en "/" para que Retrofit pueda concatenar las rutas relativas.
     private const val BASE_URL_MEAL = "https://www.themealdb.com/api/json/v1/1/"
     private const val BASE_URL_COCKTAIL = "https://www.thecocktaildb.com/api/json/v1/1/"
+    private const val BASE_URL_ANIMAL = "https://extinct-api.herokuapp.com/api/v1/"
 
     private val clienteHttp: OkHttpClient = OkHttpClient.Builder()
         // Muestra cada petición en Logcat (filtrar por "OkHttp"): útil para depurar y para clase.
@@ -35,5 +36,15 @@ object RetrofitClient {
             .addConverterFactory(GsonConverterFactory.create()) // JSON <-> objetos Kotlin
             .build()
             .create(CocktailApiService::class.java)
+    }
+
+    // API 3: Animales Extintos (Extinct API)
+    val animalApi: AnimalApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL_ANIMAL)
+            .client(clienteHttp)
+            .addConverterFactory(GsonConverterFactory.create()) // JSON <-> objetos Kotlin
+            .build()
+            .create(AnimalApiService::class.java)
     }
 }
