@@ -10,8 +10,7 @@ object MapeadorAnimal {
             nombreCientifico = dto.binomialName.orEmpty(),
             ubicacion = dto.location.orEmpty(),
             ultimoRegistro = dto.lastRecord.orEmpty(),
-            descripcion = dto.shortDescription.orEmpty(),
-            imagen = dto.image.orEmpty()
+            descripcion = dto.shortDesc.orEmpty()
         )
     }
 

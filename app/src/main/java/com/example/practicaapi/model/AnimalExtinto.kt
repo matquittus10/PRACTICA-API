@@ -6,5 +6,4 @@ data class AnimalExtinto(
     val ubicacion: String,
     val ultimoRegistro: String,
     val descripcion: String,
-    val imagen: String,
 )

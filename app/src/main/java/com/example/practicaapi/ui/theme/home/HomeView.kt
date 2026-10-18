@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
@@ -37,6 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.example.practicaapi.model.AnimalExtinto
 import com.example.practicaapi.model.Coctel
 import com.example.practicaapi.model.PlatoComida
 import com.example.practicaapi.ui.theme.PracticaAPITheme
@@ -102,12 +102,13 @@ fun HomeView(
                 )
             }
 
-            // Tarjeta API 3: Próximamente
+            // Tarjeta API 3: AnimalExtinto (Extinct API)
             item {
-                CardApiPlaceholder(
-                    numeroApi = 3,
-                    nombreApi = "API 3 - Próximamente",
-                    descripcion = "Tercera API a integrar en el proyecto."
+                CardApiAnimal(
+                    cargando = viewModel.cargandoAnimales,
+                    mensajeError = viewModel.errorAnimales,
+                    animal = viewModel.animal,
+                    onCargarAnimal = { viewModel.cargarAnimales() }
                 )
             }
         }
@@ -386,32 +387,144 @@ fun CardApiCoctel(
 }
 
 @Composable
-fun CardApiPlaceholder(
-    numeroApi: Int,
-    nombreApi: String,
-    descripcion: String
+fun CardApiAnimal(
+    cargando: Boolean,
+    mensajeError: String?,
+    animal: AnimalExtinto?,
+    onCargarAnimal: () -> Unit
 ) {
-    Card(
+    ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
         )
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = "API $numeroApi: $nombreApi",
+                text = "API 3: Animal Extinto Aleatorio",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.secondary
+                color = MaterialTheme.colorScheme.onSecondaryContainer
             )
-            Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = descripcion,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                text = "Extinct API (https://extinct-api.herokuapp.com/)",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.outline
             )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            when {
+                cargando -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(120.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+
+                mensajeError != null -> {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Error: $mensajeError",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(onClick = onCargarAnimal) {
+                            Text("Reintentar")
+                        }
+                    }
+                }
+
+                animal != null -> {
+                    Column(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        ItemAnimalExtinto(animal = animal)
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Button(
+                            onClick = onCargarAnimal,
+                            modifier = Modifier.align(Alignment.End)
+                        ) {
+                            Text("Otro animal")
+                        }
+                    }
+                }
+
+                else -> {
+                    Text(
+                        text = "No hay animales extintos registrados.",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ItemAnimalExtinto(animal: AnimalExtinto) {
+    OutlinedCard(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp)
+        ) {
+            Text(
+                text = animal.nombre,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            if (animal.nombreCientifico.isNotBlank()) {
+                Text(
+                    text = animal.nombreCientifico,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.outline
+                )
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (animal.ubicacion.isNotBlank()) {
+                    AssistChip(
+                        onClick = { },
+                        label = { Text(animal.ubicacion) }
+                    )
+                }
+                if (animal.ultimoRegistro.isNotBlank()) {
+                    AssistChip(
+                        onClick = { },
+                        label = { Text("Año: ${animal.ultimoRegistro}") }
+                    )
+                }
+            }
+            if (animal.descripcion.isNotBlank()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Descripción:",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = animal.descripcion,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
         }
     }
 }

@@ -21,7 +21,5 @@ data class AnimalDto(
     @SerializedName("location")
     val location: String? = null,
     @SerializedName("shortDescription")
-    val shortDescription: String? = null,
-    @SerializedName("image")
-    val image: String? = null
+    val shortDesc: String? = null
 )
