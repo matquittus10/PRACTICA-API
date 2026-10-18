@@ -7,7 +7,7 @@ import com.example.practicaapi.model.PlatoComida
 class FreeMealRepository(
     private val apiService: FreeMealApiService = RetrofitClient.api
 ) {
-    suspend fun obtenerPlatosPorLetra(letra: String = "a"): List<PlatoComida> {
+    suspend fun obtenerPlatosPorLetra(letra: String): List<PlatoComida> {
         val response = apiService.buscarPlatosPorLetra(letra)
         return MapeadorFreeMeal.aListaPlatos(response.meals)
     }
