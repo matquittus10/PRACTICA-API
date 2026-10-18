@@ -5,23 +5,35 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-/** Unica instancia de Retrofit de la app (patron singleton con `object`). */
+/** Única instancia de Retrofit de la app (patrón singleton con `object`). */
 object RetrofitClient {
 
     // Debe terminar en "/" para que Retrofit pueda concatenar las rutas relativas.
-    private const val BASE_URL = "https://www.themealdb.com/api/json/v1/1/"
+    private const val BASE_URL_MEAL = "https://www.themealdb.com/api/json/v1/1/"
+    private const val BASE_URL_COCKTAIL = "https://www.thecocktaildb.com/api/json/v1/1/"
 
     private val clienteHttp: OkHttpClient = OkHttpClient.Builder()
-        // Muestra cada peticion en Logcat (filtrar por "OkHttp"): util para depurar y para clase.
+        // Muestra cada petición en Logcat (filtrar por "OkHttp"): útil para depurar y para clase.
         .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BASIC })
         .build()
 
+    // API 1: Platos de Comida (TheMealDB)
     val api: FreeMealApiService by lazy {
         Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(BASE_URL_MEAL)
             .client(clienteHttp)
             .addConverterFactory(GsonConverterFactory.create()) // JSON <-> objetos Kotlin
             .build()
             .create(FreeMealApiService::class.java)
+    }
+
+    // API 2: Cócteles (TheCocktailDB)
+    val cocktailApi: CocktailApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL_COCKTAIL)
+            .client(clienteHttp)
+            .addConverterFactory(GsonConverterFactory.create()) // JSON <-> objetos Kotlin
+            .build()
+            .create(CocktailApiService::class.java)
     }
 }

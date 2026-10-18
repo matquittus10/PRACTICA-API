@@ -10,8 +10,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -28,11 +29,15 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import com.example.practicaapi.model.Coctel
 import com.example.practicaapi.model.PlatoComida
 import com.example.practicaapi.ui.theme.PracticaAPITheme
 
@@ -71,7 +76,7 @@ fun HomeView(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "A continuación se presentan las tarjetas para cada una de las 3 APIs integradas.",
+                    text = "A continuación se presentan las tarjetas para cada una de las APIs integradas.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -87,12 +92,13 @@ fun HomeView(
                 )
             }
 
-            // Tarjeta API 2: Próximamente
+            // Tarjeta API 2: Coctel (TheCocktailDB)
             item {
-                CardApiPlaceholder(
-                    numeroApi = 2,
-                    nombreApi = "API 2 - Próximamente",
-                    descripcion = "Segunda API a integrar en el proyecto."
+                CardApiCoctel(
+                    cargando = viewModel.cargandoCoctel,
+                    mensajeError = viewModel.errorCoctel,
+                    coctel = viewModel.coctel,
+                    onCargarCoctel = { viewModel.cargarCoctel() }
                 )
             }
 
@@ -235,6 +241,145 @@ fun ItemPlatoComida(plato: PlatoComida) {
                     overflow = TextOverflow.Ellipsis,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun CardApiCoctel(
+    cargando: Boolean,
+    mensajeError: String?,
+    coctel: Coctel?,
+    onCargarCoctel: () -> Unit
+) {
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "API 2: Cóctel Aleatorio",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onTertiaryContainer
+            )
+            Text(
+                text = "TheCocktailDB (https://www.thecocktaildb.com/)",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.outline
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            when {
+                cargando -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(120.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+
+                mensajeError != null -> {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Error: $mensajeError",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(onClick = onCargarCoctel) {
+                            Text("Reintentar")
+                        }
+                    }
+                }
+
+                coctel != null -> {
+                    Column(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            if (coctel.imagen.isNotBlank()) {
+                                AsyncImage(
+                                    model = coctel.imagen,
+                                    contentDescription = coctel.nombre,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .size(80.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                )
+                            }
+                            Column(
+                                modifier = Modifier
+                                    .padding(start = 12.dp)
+                                    .weight(1f)
+                            ) {
+                                Text(
+                                    text = coctel.nombre,
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    if (coctel.categoria.isNotBlank()) {
+                                        AssistChip(
+                                            onClick = { },
+                                            label = { Text(coctel.categoria) }
+                                        )
+                                    }
+                                    AssistChip(
+                                        onClick = { },
+                                        label = {
+                                            Text(if (coctel.esAlcoholico) "Alcohólico" else "Sin alcohol")
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                        if (coctel.instrucciones.isNotBlank()) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = coctel.instrucciones,
+                                style = MaterialTheme.typography.bodySmall,
+                                maxLines = 4,
+                                overflow = TextOverflow.Ellipsis,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Button(
+                            onClick = onCargarCoctel,
+                            modifier = Modifier.align(Alignment.End)
+                        ) {
+                            Text("Otro cóctel")
+                        }
+                    }
+                }
+
+                else -> {
+                    Text(
+                        text = "No hay cóctel cargado.",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
             }
         }
     }
