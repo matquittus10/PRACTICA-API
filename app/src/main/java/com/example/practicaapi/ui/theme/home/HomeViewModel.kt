@@ -12,6 +12,7 @@ import com.example.practicaapi.data.FavoritoRepository
 import com.example.practicaapi.data.FreeMealRepository
 import com.example.practicaapi.data.MapeadorFreeMeal.aFavoritoEntity
 import com.example.practicaapi.data.local.MealDatabase
+import com.example.practicaapi.data.remote.RetrofitClient
 import com.example.practicaapi.model.AnimalExtinto
 import com.example.practicaapi.model.Coctel
 import com.example.practicaapi.model.PlatoComida
@@ -20,10 +21,11 @@ import kotlinx.coroutines.launch
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val mealRepository = FreeMealRepository()
+    private val database = MealDatabase.obtener(application)
+    private val mealRepository = FreeMealRepository(apiService = RetrofitClient.api, cacheDao = database.cacheDao())
     private val coctelRepository = CoctelRepository()
     private val animalRepository = AnimalRepository()
-    private val favoritoRepository = FavoritoRepository(MealDatabase.obtener(application).favoritoDao())
+    private val favoritoRepository = FavoritoRepository(database.favoritoDao())
 
     // API 1: Comidas (TheMealDB)
     var listaPlatos by mutableStateOf<List<PlatoComida>>(emptyList())

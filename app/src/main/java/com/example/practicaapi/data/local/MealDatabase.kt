@@ -6,12 +6,13 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [MealFavoritoEntity::class],
-    version = 1,
+    entities = [MealFavoritoEntity::class, MealCacheEntity::class],
+    version = 2,
     exportSchema = false
 )
 abstract class MealDatabase : RoomDatabase() {
     abstract fun favoritoDao(): MealFavoritoDao
+    abstract fun cacheDao(): MealCacheDao
 
     companion object {
         @Volatile
@@ -23,7 +24,10 @@ abstract class MealDatabase : RoomDatabase() {
                     context.applicationContext,
                     MealDatabase::class.java,
                     "meal_database.db"
-                ).build().also { INSTANCE = it }
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
+                    .also { INSTANCE = it }
             }
         }
     }
