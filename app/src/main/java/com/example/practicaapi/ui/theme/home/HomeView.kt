@@ -19,6 +19,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
@@ -88,6 +89,8 @@ fun HomeView(
                     cargando = viewModel.cargando,
                     mensajeError = viewModel.mensajeError,
                     listaPlatos = viewModel.listaPlatos,
+                    idsFavoritos = viewModel.idsFavoritos,
+                    onToggleFavorito = { plato -> viewModel.alternarFavorito(plato) },
                     onReintentar = { viewModel.cargarComida() }
                 )
             }
@@ -120,6 +123,8 @@ fun CardApiPlatoComida(
     cargando: Boolean,
     mensajeError: String?,
     listaPlatos: List<PlatoComida>,
+    idsFavoritos: Set<String>,
+    onToggleFavorito: (PlatoComida) -> Unit,
     onReintentar: () -> Unit
 ) {
     ElevatedCard(
@@ -194,7 +199,11 @@ fun CardApiPlatoComida(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         listaPlatos.take(5).forEach { plato ->
-                            ItemPlatoComida(plato = plato)
+                            ItemPlatoComida(
+                                plato = plato,
+                                esFavorito = idsFavoritos.contains(plato.id),
+                                onToggleFavorito = { onToggleFavorito(plato) }
+                            )
                         }
                     }
                 }
@@ -204,18 +213,35 @@ fun CardApiPlatoComida(
 }
 
 @Composable
-fun ItemPlatoComida(plato: PlatoComida) {
+fun ItemPlatoComida(
+    plato: PlatoComida,
+    esFavorito: Boolean,
+    onToggleFavorito: () -> Unit
+) {
     OutlinedCard(
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier.padding(12.dp)
         ) {
-            Text(
-                text = plato.nombre,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = plato.nombre,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f)
+                )
+                IconButton(onClick = onToggleFavorito) {
+                    Text(
+                        text = if (esFavorito) "❤️" else "🤍",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(4.dp))
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)

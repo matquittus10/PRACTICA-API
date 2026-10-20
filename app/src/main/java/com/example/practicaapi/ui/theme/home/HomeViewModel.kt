@@ -1,23 +1,29 @@
 package com.example.practicaapi.ui.theme.home
 
+import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.practicaapi.data.AnimalRepository
 import com.example.practicaapi.data.CoctelRepository
+import com.example.practicaapi.data.FavoritoRepository
 import com.example.practicaapi.data.FreeMealRepository
+import com.example.practicaapi.data.MapeadorFreeMeal.aFavoritoEntity
+import com.example.practicaapi.data.local.MealDatabase
 import com.example.practicaapi.model.AnimalExtinto
 import com.example.practicaapi.model.Coctel
 import com.example.practicaapi.model.PlatoComida
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-class HomeViewModel(
-    private val mealRepository: FreeMealRepository = FreeMealRepository(),
-    private val coctelRepository: CoctelRepository = CoctelRepository(),
-    private val animalRepository: AnimalRepository = AnimalRepository()
-) : ViewModel() {
+class HomeViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val mealRepository = FreeMealRepository()
+    private val coctelRepository = CoctelRepository()
+    private val animalRepository = AnimalRepository()
+    private val favoritoRepository = FavoritoRepository(MealDatabase.obtener(application).favoritoDao())
 
     // API 1: Comidas (TheMealDB)
     var listaPlatos by mutableStateOf<List<PlatoComida>>(emptyList())
@@ -27,6 +33,10 @@ class HomeViewModel(
         private set
 
     var mensajeError by mutableStateOf<String?>(null)
+        private set
+
+    // Favoritos (Room)
+    var idsFavoritos by mutableStateOf<Set<String>>(emptySet())
         private set
 
     // API 2: Cócteles (TheCocktailDB)
@@ -56,6 +66,25 @@ class HomeViewModel(
         cargarComida()
         cargarCoctel()
         cargarAnimales()
+        observarFavoritos()
+    }
+
+    private fun observarFavoritos() {
+        viewModelScope.launch {
+            favoritoRepository.observarIdsFavoritos().collectLatest { ids ->
+                idsFavoritos = ids.toSet()
+            }
+        }
+    }
+
+    fun alternarFavorito(plato: PlatoComida) {
+        viewModelScope.launch {
+            if (idsFavoritos.contains(plato.id)) {
+                favoritoRepository.quitar(plato.id)
+            } else {
+                favoritoRepository.agregar(plato.aPlatoComidaResumen().aFavoritoEntity())
+            }
+        }
     }
 
     fun cargarComida() {
@@ -63,7 +92,7 @@ class HomeViewModel(
             cargando = true
             mensajeError = null
             try {
-                listaPlatos = mealRepository.obtenerPlatosPorLetra("b")
+                listaPlatos = mealRepository.obtenerPlatosPorLetra("c")
             } catch (e: Exception) {
                 mensajeError = e.localizedMessage ?: "Error al cargar la comida"
             } finally {
