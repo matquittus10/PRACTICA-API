@@ -69,6 +69,13 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         cargarCoctel()
         cargarAnimales()
         observarFavoritos()
+        sincronizarFavoritosNube()
+    }
+
+    private fun sincronizarFavoritosNube() {
+        viewModelScope.launch {
+            favoritoRepository.sincronizarConNube()
+        }
     }
 
     private fun observarFavoritos() {
@@ -94,7 +101,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             cargando = true
             mensajeError = null
             try {
-                listaPlatos = mealRepository.obtenerPlatosPorLetra("c")
+                listaPlatos = mealRepository.obtenerPlatosPorLetra("p")
             } catch (e: Exception) {
                 mensajeError = e.localizedMessage ?: "Error al cargar la comida"
             } finally {

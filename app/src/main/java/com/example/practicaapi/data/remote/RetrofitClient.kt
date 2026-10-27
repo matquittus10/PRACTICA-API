@@ -14,8 +14,8 @@ object RetrofitClient {
     private const val BASE_URL_ANIMAL = "https://extinct-api.herokuapp.com/api/v1/"
 
     private val clienteHttp: OkHttpClient = OkHttpClient.Builder()
-        // Muestra cada petición en Logcat (filtrar por "OkHttp"): útil para depurar y para clase.
-        .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BASIC })
+        // Muestra cada petición en Logcat con encabezados y cuerpo para depuración.
+        .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
         .build()
 
     // API 1: Platos de Comida (TheMealDB)
@@ -46,5 +46,19 @@ object RetrofitClient {
             .addConverterFactory(GsonConverterFactory.create()) // JSON <-> objetos Kotlin
             .build()
             .create(AnimalApiService::class.java)
+    }
+
+    // API 4: SQLiteCloud (Base de datos en la nube REST v2)
+    private const val BASE_URL_SQLITE_CLOUD = "https://cs3ol83cvz.g3.sqlite.cloud/"
+    const val SQLITE_CLOUD_API_KEY = "Bearer biwUFNw8AGAVxwIHBqKWoKj4muR7lfDvB8JkqorAskY"
+    const val SQLITE_CLOUD_DB_NAME = "meal_db.sqlite"
+
+    val sqliteCloudApi: SQLiteCloudApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL_SQLITE_CLOUD)
+            .client(clienteHttp)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(SQLiteCloudApiService::class.java)
     }
 }
