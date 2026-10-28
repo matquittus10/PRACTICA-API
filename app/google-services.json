@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "795376775639",
+    "project_id": "practica-upb-marcoavila",
+    "storage_bucket": "practica-upb-marcoavila.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:795376775639:android:386fc630f01981cd389b92",
+        "android_client_info": {
+          "package_name": "com.example.practicaapi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBEtMgtj8k8hCIf6zS7fdC2_9elrV3Swtw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

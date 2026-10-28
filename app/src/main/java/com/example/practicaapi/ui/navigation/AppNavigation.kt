@@ -1,0 +1,47 @@
+package com.example.practicaapi.ui.navigation
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.practicaapi.ui.auth.AuthViewModel
+import com.example.practicaapi.ui.auth.LoginScreen
+import com.example.practicaapi.ui.theme.home.HomeView
+
+private const val RUTA_LOGIN = "login"
+private const val RUTA_HOME = "home"
+
+@Composable
+fun AppNavigation(authViewModel: AuthViewModel = viewModel()) {
+    val navController = rememberNavController()
+    val usuario by authViewModel.usuario.collectAsState()
+    val haySesion = usuario != null
+
+    NavHost(
+        navController = navController,
+        startDestination = if (haySesion) RUTA_HOME else RUTA_LOGIN
+    ) {
+        composable(RUTA_LOGIN) {
+            LoginScreen(viewModel = authViewModel)
+        }
+        composable(RUTA_HOME) {
+            HomeView(
+                correoUsuario = usuario?.email.orEmpty(),
+                onCerrarSesion = authViewModel::cerrarSesion
+            )
+        }
+    }
+
+    LaunchedEffect(haySesion) {
+        val destinoActual = navController.currentDestination?.route
+        if (haySesion && destinoActual == RUTA_LOGIN) {
+            navController.navigate(RUTA_HOME) { popUpTo(0) }
+        } else if (!haySesion && destinoActual != RUTA_LOGIN) {
+            navController.navigate(RUTA_LOGIN) { popUpTo(0) }
+        }
+    }
+}
